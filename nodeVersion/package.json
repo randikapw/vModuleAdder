@@ -1,0 +1,19 @@
+{
+  "name": "ksionic",
+  "version": "1.0.0",
+  "description": "To initialize ionic kick starter project with configured modules",
+  "main": "ksionic",
+  "scripts": {
+    "test": "testks"
+  },
+  "author": "Randika Weerasooriya",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^2.12.2",
+    "node-cmd": "^3.0.0",
+    "unzip": "^0.1.11"
+  },
+  "bin" : {
+    "ksionic" : "./ksionic.js"
+  }
+}
