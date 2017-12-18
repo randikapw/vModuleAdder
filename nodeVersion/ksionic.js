@@ -62,7 +62,7 @@ function extractZipFile(zipFile,destination,onSuccess,onFail){
 
 //####CLI CMD RELATED FUNCTIONS
 function changeCliDerectory(path){
-    console.log("Working derectory changed to %s",path);
+    console.log("CLI working directory changed to %s",path);
     comdOptions = {
         cwd: path,
         stdio: 'pipe',
@@ -107,18 +107,37 @@ function executeCmd(command, args,onSuccess, onFail) {
 
 //### TEMP FUNCTION TO CONFIGURE MODULE, THIS SHOULD BE A SEPERATE COMPLEX COMPONENT.
 function configureModule(moduleName,projectFolderPath,onComplete){
+    var isCompleted = false;
     var complete = function(){
-        setConsoleColor(consoleColorReset);   
-        if(onComplete){
-            onComplete();
+        if(!isCompleted){
+            isCompleted = true;
+            setConsoleColor(consoleColorReset);   
+            if(onComplete){
+                onComplete();
+            }
         }
     };
     setConsoleColor(consoleStyles.dim);
     if(moduleName === 'vlogger'){
       //vlogger is a provider component
       //So init provider in project
-      console.log('Downloading vLogger module...');
-      request('https://raw.githubusercontent.com/randikapw/vModuleAdder/master/nodeVersion/zipTest/v-logger.zip')
+      var dldURl = 'https://raw.githubusercontent.com/randikapw/vModuleAdder/252b15efb190a49df3eba57c93ec146e58b9a186/testData/v-logger.zip';
+      console.log('Downloading vLogger module:%s', dldURl);
+      request(dldURl,function(e,r,b){
+          var message = "";
+          if(e){
+              message += e + "\n"; 
+          }
+          if (r && r.statusCode !== 200) { 
+            message += "with status code: " + r.statusCode + "\n" + r.body;
+          }
+          if (message.length > 0) {
+            setConsoleColor(consoleFgClors.red);
+            console.log('Download failed:  %s',message);
+            complete();
+          }
+          
+      })      
       .pipe(fs.createWriteStream('temp/vLogger.zip'))
       .on('close', function () {
         console.log('Download completed!');
@@ -178,6 +197,7 @@ function cmdStart(name, template , options) {
                 if (++i < modules.length) {
                     var cModule = modules[i];
                     if (cModule && cModule.length){
+                        setConsoleColor(consoleColorReset);
                         setConsoleColor(consoleStyles.bright);
                         console.log('\n%d. Setup %s module to the project.',step++,modules[i]);
                         configureModule(cModule,'./'+name,next);
