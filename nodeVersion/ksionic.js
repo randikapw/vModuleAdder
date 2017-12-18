@@ -5,6 +5,7 @@ var unzip = require('unzip');
 const fs = require('fs');
 const spawn = require('child_process').spawn;
 const util = require('util');
+const request = require('request');
 
 var comdOptions = {
     stdio: 'pipe',
@@ -105,7 +106,7 @@ function executeCmd(command, args,onSuccess, onFail) {
 
 
 //### TEMP FUNCTION TO CONFIGURE MODULE, THIS SHOULD BE A SEPERATE COMPLEX COMPONENT.
-function configureModule(moduleName,onComplete){
+function configureModule(moduleName,projectFolderPath,onComplete){
     var complete = function(){
         setConsoleColor(consoleColorReset);   
         if(onComplete){
@@ -116,11 +117,16 @@ function configureModule(moduleName,onComplete){
     if(moduleName === 'vlogger'){
       //vlogger is a provider component
       //So init provider in project
+      console.log('Downloading vLogger module...');
+      request('https://raw.githubusercontent.com/randikapw/vModuleAdder/master/nodeVersion/zipTest/v-logger.zip')
+      .pipe(fs.createWriteStream('temp/vLogger.zip'))
+      .on('close', function () {
+        console.log('Download completed!');
         var command = 'ionic g provider vLogger';
         console.log('Generate vLogger provider\n> %s',command);
         executeCmd(command,null,function(){
             console.log('Transformng provider src...');
-            extractZipFile('zipTest/v-logger.zip','.\\myp\\src\\providers',function(){
+            extractZipFile('temp/vLogger.zip',projectFolderPath + '/src/providers',function(){
                 setConsoleColor(consoleFgClors.yellow);
                 console.log('vLogger provider configured!');
                 complete();
@@ -130,6 +136,8 @@ function configureModule(moduleName,onComplete){
                 complete();
             })
         });
+      });
+        
       
     } else {
       setConsoleColor(consoleFgClors.red);
@@ -138,7 +146,7 @@ function configureModule(moduleName,onComplete){
     }
 }
 
-console.log(fileExists('.\\myp\\node_modules2'));
+
 //###DEFINED APP COMMANDS
 function cmdStart(name, template , options) {
     setConsoleColor(consoleStyles.bright);
@@ -153,12 +161,18 @@ function cmdStart(name, template , options) {
     console.log('> %s',projectCreteCommand);
     executeCmd(
         projectCreteCommand,
-        // util.format('echo %s-%s',name,template),
+        //  util.format('echo %s-%s',name,template),
         [],
         function(){
-            changeCliDerectory('.\\'+name);
+            changeCliDerectory('./'+name);
         if(options.setup_modules && options.setup_modules.length){
             var modules = options.setup_modules.split(",");
+            //create a temp directory
+            var dir = './temp';
+            
+            if (!fs.existsSync(dir)){
+                fs.mkdirSync(dir);
+            }
             var i= -1;
             var next = function(){
                 if (++i < modules.length) {
@@ -166,7 +180,7 @@ function cmdStart(name, template , options) {
                     if (cModule && cModule.length){
                         setConsoleColor(consoleStyles.bright);
                         console.log('\n%d. Setup %s module to the project.',step++,modules[i]);
-                        configureModule(cModule,next);
+                        configureModule(cModule,'./'+name,next);
                     } else {
                         next();
                     }

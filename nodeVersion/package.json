@@ -11,9 +11,10 @@
   "dependencies": {
     "commander": "^2.12.2",
     "node-cmd": "^3.0.0",
+    "request": "^2.83.0",
     "unzip": "^0.1.11"
   },
-  "bin" : {
-    "ksionic" : "./ksionic.js"
+  "bin": {
+    "ksionic": "./ksionic.js"
   }
 }
